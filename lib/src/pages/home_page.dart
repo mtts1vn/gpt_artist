@@ -10,10 +10,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _larguraController = TextEditingController();
-  final TextEditingController _alturaController = TextEditingController();
+
   final TextEditingController _codigoController = TextEditingController();
 
-  late final List<int> _drawCode = [];
+  bool _draw = false;
+  List<int> _drawCode = [];
+
+  final Map<int, Color> _colors = {
+    0: Colors.white,
+    1: Colors.red,
+    2: Colors.green,
+    3: Colors.blue,
+    4: Colors.pink,
+    5: Colors.brown,
+    6: Colors.purple
+  };
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +61,7 @@ class _HomePageState extends State<HomePage> {
                                     width: .5)),
                             child: TextFormField(
                               keyboardType: TextInputType.number,
-                              controller: _larguraController,
+                              controller: _codigoController,
                               validator: (value) {
                                 if (value!.isEmpty) {
                                   return 'Required';
@@ -58,33 +69,7 @@ class _HomePageState extends State<HomePage> {
                                 return null;
                               },
                               decoration: const InputDecoration(
-                                  labelText: 'largura',
-                                  border: InputBorder.none),
-                            ),
-                          )),
-                      const Expanded(flex: 1, child: SizedBox()),
-                      Expanded(
-                          flex: 2,
-                          child: Container(
-                            padding: const EdgeInsets.only(
-                                left: 10, right: 10, bottom: 5),
-                            decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 34, 34, 34),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
-                                    width: .5)),
-                            child: TextFormField(
-                              keyboardType: TextInputType.number,
-                              controller: _alturaController,
-                              validator: (value) {
-                                if (value!.isEmpty) {
-                                  return 'Required';
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                  labelText: 'altura',
+                                  labelText: 'Código',
                                   border: InputBorder.none),
                             ),
                           )),
@@ -106,7 +91,8 @@ class _HomePageState extends State<HomePage> {
                                   color: Colors.white.withOpacity(0.2),
                                   width: .5)),
                           child: TextFormField(
-                            controller: _codigoController,
+                            controller: _larguraController,
+                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value!.isEmpty) {
                                 return 'Required';
@@ -114,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                               return null;
                             },
                             decoration: const InputDecoration(
-                                labelText: 'código', border: InputBorder.none),
+                                labelText: 'Largura', border: InputBorder.none),
                           ),
                         ),
                       ),
@@ -124,7 +110,22 @@ class _HomePageState extends State<HomePage> {
                         child: ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              print('valido');
+                              if (!_draw) {
+                                (_drawCode.isEmpty) ? null : _drawCode = [];
+                                for (var i in _codigoController.text
+                                    .trim()
+                                    .replaceAll(' ', '')
+                                    .split(',')) {
+                                  _drawCode.add(int.parse(i));
+                                }
+                                if (_draw) {
+                                  setState(() {});
+                                } else {
+                                  setState(() {
+                                    _draw = true;
+                                  });
+                                }
+                              }
                             }
                           },
                           child: const Text('Desenhar'),
@@ -135,11 +136,27 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            (_drawCode.isEmpty)
+            (!_draw)
                 ? const Center(
                     child: Text('aguardando...'),
                   )
-                : const Text('data')
+                : Expanded(
+                    child: GridView.builder(
+                      itemCount: _drawCode.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: int.parse(_larguraController.text),
+                          crossAxisSpacing: 0,
+                          mainAxisSpacing: 0),
+                      itemBuilder: (context, index) {
+                        return Expanded(
+                          flex: 1,
+                          child: Container(
+                            color: _colors[_drawCode[index]],
+                          ),
+                        );
+                      },
+                    ),
+                  )
           ],
         ),
       ),
